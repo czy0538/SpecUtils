@@ -1,0 +1,105 @@
+name: QMake Libraries
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build-qmake-library:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: linux-amd64
+            runner: ubuntu-latest
+            os_family: linux
+            lib_file: libSpecUtils.a
+          - target: linux-arm64
+            runner: ubuntu-24.04-arm
+            os_family: linux
+            lib_file: libSpecUtils.a
+          - target: windows-amd64
+            runner: windows-latest
+            os_family: windows
+            lib_file: libSpecUtils.a
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Linux dependencies
+        if: matrix.os_family == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential qt5-qmake qtbase5-dev python3
+
+      - name: Build library on Linux
+        if: matrix.os_family == 'linux'
+        shell: bash
+        run: |
+          set -euxo pipefail
+          mkdir -p build
+          cd build
+          qmake ../SpecUtils.pro "CONFIG+=release" "SPECUTILS_FLT_PARSE_METHOD=strtod"
+          make -j"$(nproc)"
+          test -f "${{ matrix.lib_file }}"
+
+      - name: Setup MSYS2 and Qt5 on Windows
+        if: matrix.os_family == 'windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-qt5
+            make
+            python
+
+      - name: Build library on Windows
+        if: matrix.os_family == 'windows'
+        shell: msys2 {0}
+        run: |
+          set -euxo pipefail
+          mkdir -p build
+          cd build
+          qmake ../SpecUtils.pro "CONFIG+=release" "SPECUTILS_FLT_PARSE_METHOD=strtod"
+          mingw32-make -j"$(nproc)"
+          test -f "${{ matrix.lib_file }}"
+
+      - name: Package artifacts on Linux
+        if: matrix.os_family == 'linux'
+        shell: bash
+        run: |
+          set -euxo pipefail
+          DEST="dist/${{ matrix.target }}"
+          mkdir -p "${DEST}/lib" "${DEST}/include/SpecUtils" "${DEST}/include/generated"
+          cp "build/${{ matrix.lib_file }}" "${DEST}/lib/"
+          cp SpecUtils/*.h SpecUtils/*.hpp "${DEST}/include/SpecUtils/"
+          cp build/generated/SpecUtils_config.h build/generated/D3SpectrumExportResources.h "${DEST}/include/generated/"
+          cp LICENSE.txt "${DEST}/"
+
+      - name: Package artifacts on Windows
+        if: matrix.os_family == 'windows'
+        shell: msys2 {0}
+        run: |
+          set -euxo pipefail
+          DEST="dist/${{ matrix.target }}"
+          mkdir -p "${DEST}/lib" "${DEST}/include/SpecUtils" "${DEST}/include/generated"
+          cp "build/${{ matrix.lib_file }}" "${DEST}/lib/"
+          cp SpecUtils/*.h SpecUtils/*.hpp "${DEST}/include/SpecUtils/"
+          cp build/generated/SpecUtils_config.h build/generated/D3SpectrumExportResources.h "${DEST}/include/generated/"
+          cp LICENSE.txt "${DEST}/"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: specutils-${{ matrix.target }}
+          path: dist/${{ matrix.target }}

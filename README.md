@@ -53,6 +53,74 @@ int main() {
 * **PERFORM_DEVELOPER_CHECKS** [default OFF]: Performs additional tests during program execution, with failed tests being output to a log file; you normally want these off because they can be slow.  Turning this option on also requires linking to `boost`.
 * **SpecUtils_SHARED_LIB** [default OFF]: Whether to compile a shared library, or static library.
 
+### Qt 5.12 / qmake integration
+This repository now includes `qmake` files that can be used in Qt 5.12 projects, while keeping CMake support.
+
+1. Build `SpecUtils` as a qmake library:
+   ```bash
+   qmake SpecUtils.pro
+   make
+   ```
+2. In your Qt application `.pro`, include:
+   ```qmake
+   SPECUTILS_ROOT = /path/to/SpecUtils
+   include($$SPECUTILS_ROOT/qmake/specutils.pri)
+   ```
+3. If the generated headers are not in the default location, set:
+   ```qmake
+   SPECUTILS_LIB_DIR = /path/to/specutils/build/output
+   SPECUTILS_GENERATED_INCLUDE = $$SPECUTILS_LIB_DIR/generated
+   ```
+
+Useful qmake options (set before including `SpecUtils.pro` or `specutils.pri`):
+* `SPECUTILS_ENABLE_D3_CHART` (`1`/`0`, default `1`)
+* `SPECUTILS_D3_SUPPORT_FILE_STATIC` (`1`/`0`, default `1`)
+* `SPECUTILS_ENABLE_URI_SPECTRA` (`1`/`0`, default `0`)
+* `SPECUTILS_USING_NO_THREADING` (`1`/`0`, default `0`)
+* `SPECUTILS_PERFORM_DEVELOPER_CHECKS` (`1`/`0`, default `0`)
+* `SPECUTILS_ENABLE_EQUALITY_CHECKS` (`1`/`0`, default `0`)
+* `SPECUTILS_FLT_PARSE_METHOD` (`fastfloat|fromchars|boost|strtod`, default `strtod`)
+
+#### Complete SUBDIRS example (library + app together)
+A ready-to-run qmake example project is included:
+* `examples_qt/Qt512SpecUtilsExample.pro`
+* `examples_qt/SpecUtilsQtApp/SpecUtilsQtApp.pro`
+* `examples_qt/SpecUtilsQtApp/main.cpp`
+
+Build it:
+```bash
+cd examples_qt
+qmake Qt512SpecUtilsExample.pro
+make
+```
+
+Run the sample app with an input spectrum file:
+```bash
+./build/app/SpecUtilsQtApp /path/to/input.n42
+```
+
+The top-level `SUBDIRS` file builds `SpecUtils` first and then links it into the Qt console app automatically.
+
+#### GitHub Actions library builds
+This repository includes a dedicated workflow for producing qmake-built library artifacts:
+* `.github/workflows/qmake-libs.yml`
+
+It builds and uploads artifacts for:
+* `linux-amd64`
+* `linux-arm64`
+* `windows-amd64`
+
+Artifact names:
+* `specutils-linux-amd64`
+* `specutils-linux-arm64`
+* `specutils-windows-amd64`
+
+Each artifact contains:
+* `lib/` (built static library)
+* `include/SpecUtils/` (public headers)
+* `include/generated/` (`SpecUtils_config.h`, `D3SpectrumExportResources.h`)
+* `LICENSE.txt`
+
 ## Bindings to other languages
 `SpecUtils` has explicit bindings to `Python`, `Java`, `Node`, and `C`, with the `C` known to be used from `C`, `Fortran`, and `Rust`.  
 
