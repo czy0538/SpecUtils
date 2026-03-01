@@ -59,7 +59,7 @@ jobs:
           update: true
           install: >-
             mingw-w64-x86_64-toolchain
-            mingw-w64-x86_64-qt5
+            mingw-w64-x86_64-qt5-base
             make
             python
 
@@ -68,9 +68,18 @@ jobs:
         shell: msys2 {0}
         run: |
           set -euxo pipefail
+          QMAKE_BIN=""
+          if command -v qmake >/dev/null 2>&1; then
+            QMAKE_BIN="$(command -v qmake)"
+          elif command -v qmake-qt5 >/dev/null 2>&1; then
+            QMAKE_BIN="$(command -v qmake-qt5)"
+          elif command -v qmake5 >/dev/null 2>&1; then
+            QMAKE_BIN="$(command -v qmake5)"
+          fi
+          test -n "${QMAKE_BIN}"
           mkdir -p build
           cd build
-          qmake ../SpecUtils.pro "CONFIG+=release" "SPECUTILS_FLT_PARSE_METHOD=strtod"
+          "${QMAKE_BIN}" ../SpecUtils.pro "CONFIG+=release" "SPECUTILS_FLT_PARSE_METHOD=strtod"
           mingw32-make -j"$(nproc)"
           test -f "${{ matrix.lib_file }}"
 
