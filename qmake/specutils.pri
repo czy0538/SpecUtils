@@ -1,4 +1,4 @@
-SPECUTILS_PRI_DIR = $$clean_path($$_PRO_FILE_PWD_)
+SPECUTILS_PRI_DIR = $$clean_path($$PWD)
 include($$SPECUTILS_PRI_DIR/specutils_defaults.pri)
 
 isEmpty(SPECUTILS_LIB_NAME): SPECUTILS_LIB_NAME = SpecUtils

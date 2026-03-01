@@ -1,4 +1,4 @@
-SPECUTILS_QMAKE_DIR = $$clean_path($$_PRO_FILE_PWD_)
+SPECUTILS_QMAKE_DIR = $$clean_path($$PWD)
 include($$SPECUTILS_QMAKE_DIR/specutils_defaults.pri)
 
 SPECUTILS_GENERATOR_DIR = $$SPECUTILS_QMAKE_DIR/scripts
@@ -9,11 +9,6 @@ SPECUTILS_D3_CHART_CSS_PATH = $$SPECUTILS_ROOT/d3_resources/SpectrumChartD3.css
 
 SPECUTILS_CONFIG_HEADER = $$SPECUTILS_GENERATED_DIR/SpecUtils_config.h
 SPECUTILS_D3_HEADER = $$SPECUTILS_GENERATED_DIR/D3SpectrumExportResources.h
-
-system($$QMAKE_MKDIR $$shell_quote($$SPECUTILS_GENERATED_DIR), lines, specutils_mkdir_status)
-!equals(specutils_mkdir_status, 0) {
-    error(Failed to create generated include directory: $$SPECUTILS_GENERATED_DIR)
-}
 
 specutils_config_cmd = $$shell_quote($$SPECUTILS_PYTHON)
 specutils_config_cmd += $$shell_quote($$SPECUTILS_GENERATOR_DIR/gen_specutils_config.py)

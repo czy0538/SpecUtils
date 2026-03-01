@@ -1,4 +1,4 @@
-SPECUTILS_QMAKE_DIR = $$clean_path($$_PRO_FILE_PWD_)
+SPECUTILS_QMAKE_DIR = $$clean_path($$PWD)
 include($$SPECUTILS_QMAKE_DIR/specutils_defaults.pri)
 
 INCLUDEPATH += $$SPECUTILS_ROOT
