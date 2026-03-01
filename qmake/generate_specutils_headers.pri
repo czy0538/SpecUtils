@@ -28,7 +28,7 @@ specutils_config_cmd += --use-simd $$SPECUTILS_USE_SIMD
 specutils_config_cmd += --enable-equality-checks $$SPECUTILS_ENABLE_EQUALITY_CHECKS
 specutils_config_cmd += --flt-parse-method $$SPECUTILS_FLT_PARSE_METHOD
 
-system($$specutils_config_cmd, lines, specutils_config_status)
+specutils_config_output = $$system($$specutils_config_cmd, lines, specutils_config_status)
 !equals(specutils_config_status, 0) {
     error(Failed to generate SpecUtils_config.h)
 }
@@ -42,7 +42,7 @@ specutils_d3_cmd += --d3-min-js $$shell_quote($$SPECUTILS_D3_MIN_JS_PATH)
 specutils_d3_cmd += --spectrum-js $$shell_quote($$SPECUTILS_D3_CHART_JS_PATH)
 specutils_d3_cmd += --spectrum-css $$shell_quote($$SPECUTILS_D3_CHART_CSS_PATH)
 
-system($$specutils_d3_cmd, lines, specutils_d3_status)
+specutils_d3_output = $$system($$specutils_d3_cmd, lines, specutils_d3_status)
 !equals(specutils_d3_status, 0) {
     error(Failed to generate D3SpectrumExportResources.h)
 }
